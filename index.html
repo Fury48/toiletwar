@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toilet War</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="game-shell" aria-label="Toilet War">
+      <div class="hud" aria-live="polite">
+        <div class="status-block">
+          <span id="turnBadge" class="turn-badge blue">BLUE</span>
+          <span id="statusText">READY</span>
+        </div>
+        <div class="score-row">
+          <span class="score red">RED <b id="redRemaining">10</b></span>
+          <span class="score blue">BLUE <b id="blueRemaining">10</b></span>
+        </div>
+        <button id="startButton" class="control-button" type="button">START</button>
+        <button id="restartButton" class="control-button secondary" type="button" hidden>
+          RESTART
+        </button>
+      </div>
+
+      <section id="redQueue" class="queue-zone queue-red" aria-label="Red queue"></section>
+      <section id="blueQueue" class="queue-zone queue-blue" aria-label="Blue queue"></section>
+
+      <div class="divider divider-top"></div>
+      <div class="divider divider-bottom"></div>
+
+      <section id="board" class="board" aria-label="Urinal board">
+        <div class="lane lane-top" data-row="0"></div>
+        <div class="lane lane-bottom" data-row="1"></div>
+      </section>
+
+      <div id="gameOverPanel" class="game-over" hidden>
+        <div id="gameOverTitle" class="game-over-title">CHECKMATE</div>
+        <button id="gameOverRestart" class="control-button" type="button">RESTART</button>
+      </div>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

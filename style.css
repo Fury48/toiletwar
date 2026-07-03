@@ -1,0 +1,330 @@
+:root {
+  --red: #e34522;
+  --blue: #20a9e8;
+  --black: #070707;
+  --porcelain: #f2f4f8;
+  --porcelain-dark: #d8dde7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--black);
+}
+
+button {
+  font: inherit;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.game-shell {
+  position: relative;
+  width: min(100vw, calc(100vh * 1.767258));
+  height: min(100vh, calc(100vw / 1.767258));
+  aspect-ratio: 1792 / 1014;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #dedede;
+  user-select: none;
+}
+
+.hud {
+  position: absolute;
+  top: 1.2%;
+  left: 26.2%;
+  right: 1.2%;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(6px, 0.9vw, 14px);
+  pointer-events: none;
+}
+
+.status-block,
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(7px, 0.85vw, 14px);
+  min-height: clamp(24px, 2.55vw, 40px);
+  padding: 0 clamp(8px, 0.9vw, 14px);
+  border: clamp(1px, 0.18vw, 3px) solid var(--black);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.88);
+  font-size: clamp(10px, 1vw, 17px);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.turn-badge,
+.score {
+  font-weight: 800;
+}
+
+.turn-badge.red,
+.score.red {
+  color: var(--red);
+}
+
+.turn-badge.blue,
+.score.blue {
+  color: var(--blue);
+}
+
+.control-button {
+  min-width: clamp(62px, 6.8vw, 118px);
+  min-height: clamp(28px, 2.65vw, 44px);
+  border: clamp(1px, 0.18vw, 3px) solid var(--black);
+  border-radius: 4px;
+  background: #ffffff;
+  color: var(--black);
+  font-size: clamp(10px, 1vw, 17px);
+  font-weight: 800;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.control-button:hover {
+  background: #f2f2f2;
+}
+
+.control-button.secondary {
+  min-width: clamp(76px, 7.8vw, 132px);
+}
+
+.divider {
+  position: absolute;
+  left: 24.25%;
+  width: 0.62%;
+  background: #000000;
+  z-index: 8;
+}
+
+.divider-top {
+  top: 0;
+  height: 42%;
+}
+
+.divider-bottom {
+  top: 58%;
+  height: 42%;
+}
+
+.board,
+.lane {
+  position: absolute;
+}
+
+.board {
+  inset: 0;
+}
+
+.lane {
+  left: 25.7%;
+  right: 0.2%;
+  height: 22.2%;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  align-items: center;
+  justify-items: center;
+  z-index: 4;
+}
+
+.lane-top {
+  top: 18.1%;
+}
+
+.lane-bottom {
+  top: 73%;
+}
+
+.urinal-slot {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  cursor: default;
+}
+
+.urinal-slot:focus-visible,
+.control-button:focus-visible {
+  outline: clamp(2px, 0.2vw, 3px) solid var(--blue);
+  outline-offset: clamp(2px, 0.22vw, 4px);
+}
+
+.urinal-slot.can-target {
+  cursor: pointer;
+}
+
+.urinal-svg {
+  width: 75%;
+  height: 100%;
+  overflow: visible;
+}
+
+.urinal-slot.valid-drop .urinal-svg {
+  filter: drop-shadow(0 0 0.45vw rgba(32, 169, 232, 0.46));
+}
+
+.urinal-slot.blocked-drop .urinal-svg {
+  opacity: 0.46;
+}
+
+.urinal-slot.last-move .urinal-svg {
+  filter: drop-shadow(0 0 0.3vw rgba(0, 0, 0, 0.25));
+}
+
+.urinal-slot.collision .urinal-svg {
+  animation: collision-bump 0.18s linear 2;
+  filter: drop-shadow(0 0 0.42vw rgba(227, 69, 34, 0.66));
+}
+
+.placed-person {
+  position: absolute;
+  top: -3%;
+  left: 50%;
+  z-index: 5;
+  width: 54%;
+  aspect-ratio: 90 / 170;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.placed-person svg,
+.queue-person svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.queue-zone {
+  position: absolute;
+  left: 0;
+  width: 24.3%;
+  height: 42%;
+  z-index: 16;
+}
+
+.queue-red {
+  top: 0;
+}
+
+.queue-blue {
+  bottom: 0;
+}
+
+.queue-person {
+  position: absolute;
+  width: 16.7%;
+  aspect-ratio: 90 / 170;
+  transform: translate(-50%, -50%);
+  transition:
+    filter 120ms ease,
+    transform 120ms ease,
+    opacity 120ms ease;
+}
+
+.queue-person.front {
+  cursor: grab;
+}
+
+.queue-person.front:active {
+  cursor: grabbing;
+}
+
+.queue-person.front.ready {
+  filter: drop-shadow(0 0 0.35vw rgba(32, 169, 232, 0.55));
+}
+
+.queue-person.front.selected {
+  transform: translate(-50%, -50%) scale(1.08);
+  filter: drop-shadow(0 0 0.5vw rgba(32, 169, 232, 0.7));
+}
+
+.queue-person.waiting {
+  opacity: 0.94;
+}
+
+.queue-person.used {
+  opacity: 0;
+}
+
+.game-shell.is-dragging .urinal-slot.can-target {
+  cursor: copy;
+}
+
+.game-over {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.4vw, 22px);
+  min-width: min(52%, 620px);
+  min-height: clamp(64px, 8vw, 124px);
+  padding: clamp(16px, 2vw, 34px);
+  transform: translate(-50%, -50%);
+  border: clamp(2px, 0.24vw, 4px) solid var(--black);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+}
+
+.game-over-title {
+  flex: 1;
+  font-size: clamp(24px, 3.5vw, 64px);
+  font-weight: 900;
+  line-height: 0.96;
+}
+
+@keyframes collision-bump {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  35% {
+    transform: translateX(-0.32vw);
+  }
+
+  70% {
+    transform: translateX(0.32vw);
+  }
+}
+
+@media (max-aspect-ratio: 1 / 1) {
+  body {
+    overflow: auto;
+    place-items: start center;
+  }
+
+  .game-shell {
+    width: 150vw;
+    height: calc(150vw / 1.767258);
+    min-width: 960px;
+    min-height: 543px;
+  }
+}
