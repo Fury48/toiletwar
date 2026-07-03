@@ -2,6 +2,11 @@ const URINALS_PER_ROW = 10;
 const ROW_COUNT = 2;
 const MEN_PER_PLAYER = 10;
 const AI_THINKING_MS = 620;
+const assetPaths = {
+  human: "./assets/blue_player-removebg-preview.png",
+  ai: "./assets/red_player-removebg-preview.png",
+  urinal: "./assets/urinal-removebg-preview.png",
+};
 
 const players = {
   human: {
@@ -80,7 +85,7 @@ function buildBoard() {
       slot.dataset.row = String(row);
       slot.dataset.index = String(index);
       slot.setAttribute("aria-label", `urinal ${row + 1}-${index + 1}`);
-      slot.innerHTML = createUrinalSvg();
+      slot.innerHTML = createUrinalImage();
       slot.addEventListener("click", () => handleHumanMove(row, index));
       slot.addEventListener("dragover", handleSlotDragOver);
       slot.addEventListener("drop", (event) => handleSlotDrop(event, row, index));
@@ -427,7 +432,7 @@ function renderQueue(playerId) {
     person.style.left = `${position.x}%`;
     person.style.top = `${position.y}%`;
     person.style.zIndex = String(80 - order);
-    person.innerHTML = createPersonSvg(player.color);
+    person.innerHTML = createPersonImage(playerId);
 
     if (isHumanFrontReady && isFront) {
       person.draggable = true;
@@ -510,7 +515,7 @@ function renderBoard() {
       if (occupant) {
         const placed = document.createElement("div");
         placed.className = "placed-person";
-        placed.innerHTML = createPersonSvg(players[occupant].color);
+        placed.innerHTML = createPersonImage(occupant);
         slot.appendChild(placed);
       }
     }
@@ -525,47 +530,17 @@ function getMoveKey(row, index) {
   return `${row}:${index}`;
 }
 
-function createPersonSvg(color) {
+function createPersonImage(playerId) {
+  const player = players[playerId];
+  const src = assetPaths[playerId];
+
   return `
-    <svg viewBox="0 0 90 170" aria-hidden="true" focusable="false">
-      <circle cx="45" cy="22" r="21" fill="${color}" />
-      <rect x="14" y="52" width="62" height="78" rx="13" fill="${color}" />
-      <rect x="0" y="60" width="14" height="68" rx="7" fill="${color}" />
-      <rect x="76" y="60" width="14" height="68" rx="7" fill="${color}" />
-      <rect x="24" y="118" width="17" height="52" rx="1.5" fill="${color}" />
-      <rect x="49" y="118" width="17" height="52" rx="1.5" fill="${color}" />
-      <rect x="40" y="67" width="9" height="58" fill="#ffffff" opacity="0.88" />
-    </svg>
+    <img class="person-image" src="${src}" alt="${player.label} player" draggable="false" />
   `;
 }
 
-function createUrinalSvg() {
+function createUrinalImage() {
   return `
-    <svg class="urinal-svg" viewBox="0 0 118 174" aria-hidden="true" focusable="false">
-      <rect x="51" y="2" width="16" height="31" rx="3" fill="#d6d9df" stroke="#070707" stroke-width="5" />
-      <rect x="45" y="31" width="28" height="12" rx="2" fill="#d6d9df" stroke="#070707" stroke-width="5" />
-      <path
-        d="M36 39 H82 C94 39 101 48 103 63 L111 127 C114 152 95 169 59 169 C23 169 4 152 7 127 L15 63 C17 48 24 39 36 39 Z"
-        fill="#edf0f7"
-        stroke="#070707"
-        stroke-width="5"
-        stroke-linejoin="round"
-      />
-      <path
-        d="M39 58 H79 C88 58 93 65 94 76 L100 125 C102 142 88 153 59 153 C30 153 16 142 18 125 L24 76 C25 65 30 58 39 58 Z"
-        fill="#e5e9f2"
-        stroke="#070707"
-        stroke-width="4.6"
-        stroke-linejoin="round"
-      />
-      <ellipse cx="59" cy="126" rx="29" ry="22" fill="#dfe4ee" opacity="0.38" />
-      <path
-        d="M45 165 C45 181 73 181 73 165"
-        fill="#d6d9df"
-        stroke="#070707"
-        stroke-width="5"
-        stroke-linecap="round"
-      />
-    </svg>
+    <img class="urinal-image" src="${assetPaths.urinal}" alt="" draggable="false" />
   `;
 }
