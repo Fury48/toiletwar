@@ -1,12 +1,24 @@
-const URINALS_PER_ROW = 10;
-const ROW_COUNT = 2;
 const MEN_PER_PLAYER = 10;
 const AI_THINKING_MS = 620;
+
 const assetPaths = {
   human: "./assets/blue_player-removebg-preview.png",
   ai: "./assets/red_player-removebg-preview.png",
   urinal: "./assets/urinal-removebg-preview.png",
 };
+
+const topRowX = [15.4, 22.7, 30, 37.3, 44.6, 51.9, 59.2, 66.5, 73.8, 81.1, 88.4];
+const bottomRowX = [15.4, 22.7, 30, 37.3, 44.6, 51.9, 59.2, 66.5, 73.8, 81.1, 88.4];
+
+const boardSpots = [
+  ...topRowX.map((x, order) => ({ id: `top-${order}`, group: "top", order, x, y: 31.5 })),
+  ...bottomRowX.map((x, order) => ({ id: `bottom-${order}`, group: "bottom", order, x, y: 83.2 })),
+  { id: "right-0", group: "right", order: 0, x: 95.1, y: 39.4 },
+  { id: "right-1", group: "right", order: 1, x: 95.1, y: 59 },
+  { id: "right-2", group: "right", order: 2, x: 95.1, y: 78.6 },
+];
+
+const boardNeighbors = buildBoardNeighbors();
 
 const players = {
   human: {
@@ -28,7 +40,7 @@ const elements = {
   mainMenu: document.getElementById("mainMenu"),
   pvpPanel: document.getElementById("pvpPanel"),
   gameView: document.getElementById("gameView"),
-  lanes: Array.from(document.querySelectorAll(".lane")),
+  board: document.getElementById("board"),
   redQueue: document.getElementById("redQueue"),
   blueQueue: document.getElementById("blueQueue"),
   aiModeButton: document.getElementById("aiModeButton"),
@@ -67,31 +79,59 @@ buildBoard();
 bindControls();
 renderGame();
 
+function buildBoardNeighbors() {
+  const neighbors = new Map();
+
+  boardSpots.forEach((_, index) => neighbors.set(index, []));
+
+  // Treat the bathroom as one continuous U-shaped row of urinals.
+  const continuousPath = [
+    ...getSpotIndicesByGroup("top"),
+    ...getSpotIndicesByGroup("right"),
+    ...getSpotIndicesByGroup("bottom").reverse(),
+  ];
+
+  for (let pathIndex = 0; pathIndex < continuousPath.length - 1; pathIndex += 1) {
+    connectNeighborSpots(continuousPath[pathIndex], continuousPath[pathIndex + 1], neighbors);
+  }
+
+  return neighbors;
+}
+
+function getSpotIndicesByGroup(group) {
+  return boardSpots
+    .map((spot, index) => ({ ...spot, index }))
+    .filter((spot) => spot.group === group)
+    .sort((a, b) => a.order - b.order)
+    .map((spot) => spot.index);
+}
+
+function connectNeighborSpots(firstIndex, secondIndex, neighbors) {
+  neighbors.get(firstIndex).push(secondIndex);
+  neighbors.get(secondIndex).push(firstIndex);
+}
+
 function createEmptyBoard() {
-  return Array.from({ length: ROW_COUNT }, () =>
-    Array.from({ length: URINALS_PER_ROW }, () => null),
-  );
+  return Array.from({ length: boardSpots.length }, () => null);
 }
 
 function buildBoard() {
-  elements.lanes.forEach((lane) => {
-    const row = Number(lane.dataset.row);
-    lane.innerHTML = "";
+  elements.board.innerHTML = "";
 
-    for (let index = 0; index < URINALS_PER_ROW; index += 1) {
-      const slot = document.createElement("button");
-      slot.type = "button";
-      slot.className = "urinal-slot";
-      slot.dataset.row = String(row);
-      slot.dataset.index = String(index);
-      slot.setAttribute("aria-label", `urinal ${row + 1}-${index + 1}`);
-      slot.innerHTML = createUrinalImage();
-      slot.addEventListener("click", () => handleHumanMove(row, index));
-      slot.addEventListener("dragover", handleSlotDragOver);
-      slot.addEventListener("drop", (event) => handleSlotDrop(event, row, index));
-      slot.addEventListener("dragleave", () => slot.classList.remove("hovering"));
-      lane.appendChild(slot);
-    }
+  boardSpots.forEach((spot, index) => {
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = "urinal-slot";
+    slot.dataset.index = String(index);
+    slot.dataset.group = spot.group;
+    slot.style.setProperty("--spot-x", `${spot.x}%`);
+    slot.style.setProperty("--spot-y", `${spot.y}%`);
+    slot.setAttribute("aria-label", `urinal ${spot.id}`);
+    slot.innerHTML = createUrinalImage();
+    slot.addEventListener("click", () => handleHumanMove(index));
+    slot.addEventListener("dragover", handleSlotDragOver);
+    slot.addEventListener("drop", (event) => handleSlotDrop(event, index));
+    elements.board.appendChild(slot);
   });
 }
 
@@ -182,7 +222,7 @@ function handleSlotDragOver(event) {
   event.preventDefault();
 }
 
-function handleSlotDrop(event, row, index) {
+function handleSlotDrop(event, index) {
   event.preventDefault();
 
   if (!canHumanAct()) {
@@ -191,34 +231,34 @@ function handleSlotDrop(event, row, index) {
 
   state.draggingHuman = false;
   elements.shell.classList.remove("is-dragging");
-  handleHumanMove(row, index);
+  handleHumanMove(index);
 }
 
-function handleHumanMove(row, index) {
+function handleHumanMove(index) {
   if (!canHumanAct()) {
     return;
   }
 
-  const moved = submitMove("human", row, index);
+  const moved = submitMove("human", index);
   if (!moved) {
     state.selectedHuman = true;
     renderGame();
   }
 }
 
-function submitMove(playerId, row, index) {
-  const problem = getMoveProblem(state.board, row, index);
+function submitMove(playerId, index) {
+  const problem = getMoveProblem(state.board, index);
 
   // Invalid moves are treated as the game's collision check.
   if (problem) {
     state.message = problem;
-    flashCollision(row, index);
+    flashCollision(index);
     return false;
   }
 
-  placeMan(state.board, playerId, row, index);
+  placeMan(state.board, playerId, index);
   state.remaining[playerId] -= 1;
-  state.lastMove = { row, index };
+  state.lastMove = { index };
   state.selectedHuman = false;
   state.message = `${players[playerId].label} PLACED`;
 
@@ -252,7 +292,7 @@ function playAiTurn() {
     return;
   }
 
-  submitMove("ai", move.row, move.index);
+  submitMove("ai", move.index);
 }
 
 function chooseAiMove(board) {
@@ -272,7 +312,7 @@ function chooseAiMove(board) {
       return b.score - a.score;
     }
 
-    return Math.abs(4.5 - a.index) - Math.abs(4.5 - b.index);
+    return getCenterDistance(a.index) - getCenterDistance(b.index);
   });
 
   return scoredMoves[0];
@@ -280,7 +320,7 @@ function chooseAiMove(board) {
 
 function scoreAiMove(board, move) {
   const simulated = cloneBoard(board);
-  placeMan(simulated, "ai", move.row, move.index);
+  placeMan(simulated, "ai", move.index);
 
   // The prototype AI prefers immediate checkmate and avoids one-move traps.
   const humanReplies = getAvailableMoves(simulated);
@@ -290,13 +330,16 @@ function scoreAiMove(board, move) {
 
   const humanCanCheckmate = humanReplies.some((reply) => {
     const replyBoard = cloneBoard(simulated);
-    placeMan(replyBoard, "human", reply.row, reply.index);
+    placeMan(replyBoard, "human", reply.index);
     return getAvailableMoves(replyBoard).length === 0;
   });
 
-  const edgePressure = move.index === 0 || move.index === URINALS_PER_ROW - 1 ? 0.35 : 0;
-  const centerPressure = 4.5 - Math.abs(4.5 - move.index);
-  return -humanReplies.length * 10 - (humanCanCheckmate ? 45 : 0) + centerPressure + edgePressure;
+  return -humanReplies.length * 10 - (humanCanCheckmate ? 45 : 0) - getCenterDistance(move.index);
+}
+
+function getCenterDistance(index) {
+  const spot = boardSpots[index];
+  return Math.abs(54 - spot.x) + Math.abs(58 - spot.y) * 0.55;
 }
 
 function finishGame(winnerId, loserId) {
@@ -321,8 +364,8 @@ function canHumanAct() {
   return state.mode === "ai" && state.started && !state.gameOver && state.currentPlayer === "human";
 }
 
-function getMoveProblem(board, row, index) {
-  if (board[row][index]) {
+function getMoveProblem(board, index) {
+  if (board[index]) {
     return "OCCUPIED";
   }
 
@@ -331,48 +374,48 @@ function getMoveProblem(board, row, index) {
     return "";
   }
 
-  const leftOccupied = index > 0 && board[row][index - 1];
-  const rightOccupied = index < URINALS_PER_ROW - 1 && board[row][index + 1];
-
-  if (leftOccupied || rightOccupied) {
+  const hasOccupiedNeighbor = getAdjacentIndices(index).some((neighborIndex) => board[neighborIndex]);
+  if (hasOccupiedNeighbor) {
     return "BLOCKED";
   }
 
   return "";
 }
 
-function isMoveLegal(board, row, index) {
-  return getMoveProblem(board, row, index) === "";
+function isMoveLegal(board, index) {
+  return getMoveProblem(board, index) === "";
 }
 
 function hasAnyPlacedMan(board) {
-  return board.some((row) => row.some(Boolean));
+  return board.some(Boolean);
+}
+
+function getAdjacentIndices(index) {
+  return boardNeighbors.get(index) || [];
 }
 
 function getAvailableMoves(board) {
   const moves = [];
 
-  for (let row = 0; row < ROW_COUNT; row += 1) {
-    for (let index = 0; index < URINALS_PER_ROW; index += 1) {
-      if (isMoveLegal(board, row, index)) {
-        moves.push({ row, index });
-      }
+  for (let index = 0; index < board.length; index += 1) {
+    if (isMoveLegal(board, index)) {
+      moves.push({ index });
     }
   }
 
   return moves;
 }
 
-function placeMan(board, playerId, row, index) {
-  board[row][index] = playerId;
+function placeMan(board, playerId, index) {
+  board[index] = playerId;
 }
 
 function cloneBoard(board) {
-  return board.map((row) => row.slice());
+  return board.slice();
 }
 
-function flashCollision(row, index) {
-  const slot = getSlot(row, index);
+function flashCollision(index) {
+  const slot = getSlot(index);
   if (!slot) {
     return;
   }
@@ -454,14 +497,14 @@ function renderQueue(playerId) {
 function getQueuePosition(playerId, order) {
   if (playerId === "ai") {
     return {
-      x: 85 - order * 8.4,
-      y: 75 - order * 7.4,
+      x: 76,
+      y: 88 - order * 9.2,
     };
   }
 
   return {
-    x: 84 - order * 8.3,
-    y: 20 + order * 7.4,
+    x: 76,
+    y: 12 + order * 9.2,
   };
 }
 
@@ -488,46 +531,44 @@ function handleQueueDragEnd() {
 
 function renderBoard() {
   const availableMoves = getAvailableMoves(state.board);
-  const availableKeys = new Set(availableMoves.map((move) => getMoveKey(move.row, move.index)));
+  const availableKeys = new Set(availableMoves.map((move) => getMoveKey(move.index)));
   const showTargets = canHumanAct() && (state.selectedHuman || state.draggingHuman);
 
-  for (let row = 0; row < ROW_COUNT; row += 1) {
-    for (let index = 0; index < URINALS_PER_ROW; index += 1) {
-      const slot = getSlot(row, index);
-      const occupant = state.board[row][index];
-      const key = getMoveKey(row, index);
-      const isLegalTarget = availableKeys.has(key);
+  for (let index = 0; index < boardSpots.length; index += 1) {
+    const slot = getSlot(index);
+    const occupant = state.board[index];
+    const key = getMoveKey(index);
+    const isLegalTarget = availableKeys.has(key);
 
-      slot.classList.toggle("occupied", Boolean(occupant));
-      slot.classList.toggle("valid-drop", showTargets && isLegalTarget);
-      slot.classList.toggle("blocked-drop", showTargets && !isLegalTarget);
-      slot.classList.toggle("can-target", canHumanAct());
-      slot.classList.toggle(
-        "last-move",
-        Boolean(state.lastMove && state.lastMove.row === row && state.lastMove.index === index),
-      );
+    slot.classList.toggle("occupied", Boolean(occupant));
+    slot.classList.toggle("valid-drop", showTargets && isLegalTarget);
+    slot.classList.toggle("blocked-drop", showTargets && !isLegalTarget);
+    slot.classList.toggle("can-target", canHumanAct());
+    slot.classList.toggle(
+      "last-move",
+      Boolean(state.lastMove && state.lastMove.index === index),
+    );
 
-      const existingPerson = slot.querySelector(".placed-person");
-      if (existingPerson) {
-        existingPerson.remove();
-      }
+    const existingPerson = slot.querySelector(".placed-person");
+    if (existingPerson) {
+      existingPerson.remove();
+    }
 
-      if (occupant) {
-        const placed = document.createElement("div");
-        placed.className = "placed-person";
-        placed.innerHTML = createPersonImage(occupant);
-        slot.appendChild(placed);
-      }
+    if (occupant) {
+      const placed = document.createElement("div");
+      placed.className = `placed-person placed-${occupant}`;
+      placed.innerHTML = createPersonImage(occupant);
+      slot.appendChild(placed);
     }
   }
 }
 
-function getSlot(row, index) {
-  return document.querySelector(`.urinal-slot[data-row="${row}"][data-index="${index}"]`);
+function getSlot(index) {
+  return document.querySelector(`.urinal-slot[data-index="${index}"]`);
 }
 
-function getMoveKey(row, index) {
-  return `${row}:${index}`;
+function getMoveKey(index) {
+  return String(index);
 }
 
 function createPersonImage(playerId) {
