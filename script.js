@@ -20,9 +20,16 @@ const players = {
 
 const elements = {
   shell: document.querySelector(".game-shell"),
+  mainMenu: document.getElementById("mainMenu"),
+  pvpPanel: document.getElementById("pvpPanel"),
+  gameView: document.getElementById("gameView"),
   lanes: Array.from(document.querySelectorAll(".lane")),
   redQueue: document.getElementById("redQueue"),
   blueQueue: document.getElementById("blueQueue"),
+  aiModeButton: document.getElementById("aiModeButton"),
+  pvpModeButton: document.getElementById("pvpModeButton"),
+  pvpBackButton: document.getElementById("pvpBackButton"),
+  menuButton: document.getElementById("menuButton"),
   startButton: document.getElementById("startButton"),
   restartButton: document.getElementById("restartButton"),
   gameOverRestart: document.getElementById("gameOverRestart"),
@@ -35,6 +42,7 @@ const elements = {
 };
 
 const state = {
+  mode: null,
   started: false,
   gameOver: false,
   board: createEmptyBoard(),
@@ -83,27 +91,72 @@ function buildBoard() {
 }
 
 function bindControls() {
+  elements.aiModeButton.addEventListener("click", openAiGame);
+  elements.pvpModeButton.addEventListener("click", openPvpPanel);
+  elements.pvpBackButton.addEventListener("click", showMainMenu);
+  elements.menuButton.addEventListener("click", showMainMenu);
   elements.startButton.addEventListener("click", startGame);
   elements.restartButton.addEventListener("click", restartGame);
   elements.gameOverRestart.addEventListener("click", restartGame);
 }
 
-function startGame() {
+function openAiGame() {
   resetState();
+  state.mode = "ai";
+  state.message = "READY";
+  showScreen("game");
+  renderGame();
+}
+
+function openPvpPanel() {
+  resetState();
+  state.mode = "pvp";
+  showScreen("pvp");
+}
+
+function showMainMenu() {
+  resetState();
+  state.mode = null;
+  state.message = "READY";
+  showScreen("menu");
+  renderGame();
+}
+
+function showScreen(screenName) {
+  elements.mainMenu.hidden = screenName !== "menu";
+  elements.pvpPanel.hidden = screenName !== "pvp";
+  elements.gameView.hidden = screenName !== "game";
+}
+
+function startGame() {
+  if (state.mode !== "ai") {
+    return;
+  }
+
+  resetState();
+  state.mode = "ai";
   state.started = true;
   state.message = "BLUE TURN";
+  showScreen("game");
   renderGame();
 }
 
 function restartGame() {
+  if (state.mode !== "ai") {
+    return;
+  }
+
   resetState();
+  state.mode = "ai";
   state.started = true;
   state.message = "BLUE TURN";
+  showScreen("game");
   renderGame();
 }
 
 function resetState() {
   clearTimeout(state.aiTimer);
+  state.started = false;
   state.gameOver = false;
   state.board = createEmptyBoard();
   state.currentPlayer = "human";
@@ -171,7 +224,7 @@ function submitMove(playerId, row, index) {
   }
 
   state.currentPlayer = opponentId;
-  if (state.currentPlayer === "ai") {
+  if (state.currentPlayer === "ai" && state.mode === "ai") {
     state.message = "RED THINKING";
     renderGame();
     state.aiTimer = setTimeout(playAiTurn, AI_THINKING_MS);
@@ -184,7 +237,7 @@ function submitMove(playerId, row, index) {
 }
 
 function playAiTurn() {
-  if (state.gameOver || state.currentPlayer !== "ai") {
+  if (state.mode !== "ai" || state.gameOver || state.currentPlayer !== "ai") {
     return;
   }
 
@@ -260,7 +313,7 @@ function getOpponent(playerId) {
 }
 
 function canHumanAct() {
-  return state.started && !state.gameOver && state.currentPlayer === "human";
+  return state.mode === "ai" && state.started && !state.gameOver && state.currentPlayer === "human";
 }
 
 function getMoveProblem(board, row, index) {

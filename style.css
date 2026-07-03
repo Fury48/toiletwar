@@ -45,6 +45,143 @@ button {
   user-select: none;
 }
 
+.game-view {
+  position: absolute;
+  inset: 0;
+}
+
+.menu-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+}
+
+.menu-content {
+  width: min(70%, 820px);
+  display: grid;
+  justify-items: center;
+  gap: clamp(18px, 2.5vw, 42px);
+  padding: clamp(26px, 4vw, 70px);
+  border: clamp(2px, 0.28vw, 5px) solid var(--black);
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.pvp-content {
+  width: min(56%, 640px);
+}
+
+.menu-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 3.2vw, 58px);
+  min-height: clamp(80px, 9vw, 150px);
+}
+
+.menu-person {
+  position: relative;
+  width: clamp(42px, 4.8vw, 86px);
+  height: clamp(78px, 9vw, 160px);
+  display: block;
+}
+
+.menu-person::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 45%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.menu-person::after {
+  content: "";
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  top: 32%;
+  height: 44%;
+  border-radius: 10px 10px 4px 4px;
+  background: currentColor;
+  box-shadow:
+    -0.9em 0.18em 0 -0.34em currentColor,
+    0.9em 0.18em 0 -0.34em currentColor,
+    -0.32em 3.05em 0 -0.22em currentColor,
+    0.32em 3.05em 0 -0.22em currentColor;
+}
+
+.red-person {
+  color: var(--red);
+}
+
+.blue-person {
+  color: var(--blue);
+}
+
+.menu-urinal {
+  width: clamp(58px, 6.5vw, 116px);
+  height: clamp(82px, 9.2vw, 166px);
+  border: clamp(3px, 0.35vw, 6px) solid var(--black);
+  border-radius: 24% 24% 40% 40%;
+  background: var(--porcelain);
+  box-shadow:
+    inset 0 0 0 clamp(4px, 0.45vw, 8px) #ffffff,
+    0 clamp(-20px, -1.3vw, -10px) 0 clamp(-9px, -0.6vw, -4px) var(--porcelain-dark),
+    0 clamp(-20px, -1.3vw, -10px) 0 clamp(-5px, -0.36vw, -2px) var(--black);
+}
+
+.menu-title {
+  margin: 0;
+  font-size: clamp(42px, 7.4vw, 126px);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.small-title {
+  font-size: clamp(32px, 5vw, 84px);
+}
+
+.menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(12px, 1.5vw, 24px);
+}
+
+.mode-button {
+  min-width: clamp(150px, 17vw, 260px);
+  min-height: clamp(48px, 5vw, 76px);
+  padding: 0 clamp(16px, 1.8vw, 30px);
+  border: clamp(2px, 0.24vw, 4px) solid var(--black);
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: clamp(15px, 1.45vw, 24px);
+  font-weight: 900;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+.mode-button:hover {
+  background: #f2f2f2;
+}
+
+.blue-mode {
+  color: var(--blue);
+}
+
+.red-mode {
+  color: var(--red);
+}
+
 .hud {
   position: absolute;
   top: 1.2%;
@@ -169,7 +306,8 @@ button {
 }
 
 .urinal-slot:focus-visible,
-.control-button:focus-visible {
+.control-button:focus-visible,
+.mode-button:focus-visible {
   outline: clamp(2px, 0.2vw, 3px) solid var(--blue);
   outline-offset: clamp(2px, 0.22vw, 4px);
 }

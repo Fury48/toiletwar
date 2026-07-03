@@ -8,35 +8,62 @@
   </head>
   <body>
     <main class="game-shell" aria-label="Toilet War">
-      <div class="hud" aria-live="polite">
-        <div class="status-block">
-          <span id="turnBadge" class="turn-badge blue">BLUE</span>
-          <span id="statusText">READY</span>
+      <section id="mainMenu" class="menu-screen" aria-label="Main menu">
+        <div class="menu-content">
+          <div class="menu-icons" aria-hidden="true">
+            <span class="menu-person red-person"></span>
+            <span class="menu-urinal"></span>
+            <span class="menu-person blue-person"></span>
+          </div>
+          <h1 class="menu-title">TOILET WAR</h1>
+          <div class="menu-actions">
+            <button id="aiModeButton" class="mode-button blue-mode" type="button">AI 대전</button>
+            <button id="pvpModeButton" class="mode-button red-mode" type="button">
+              다른 사용자와 대전
+            </button>
+          </div>
         </div>
-        <div class="score-row">
-          <span class="score red">RED <b id="redRemaining">10</b></span>
-          <span class="score blue">BLUE <b id="blueRemaining">10</b></span>
-        </div>
-        <button id="startButton" class="control-button" type="button">START</button>
-        <button id="restartButton" class="control-button secondary" type="button" hidden>
-          RESTART
-        </button>
-      </div>
-
-      <section id="redQueue" class="queue-zone queue-red" aria-label="Red queue"></section>
-      <section id="blueQueue" class="queue-zone queue-blue" aria-label="Blue queue"></section>
-
-      <div class="divider divider-top"></div>
-      <div class="divider divider-bottom"></div>
-
-      <section id="board" class="board" aria-label="Urinal board">
-        <div class="lane lane-top" data-row="0"></div>
-        <div class="lane lane-bottom" data-row="1"></div>
       </section>
 
-      <div id="gameOverPanel" class="game-over" hidden>
-        <div id="gameOverTitle" class="game-over-title">CHECKMATE</div>
-        <button id="gameOverRestart" class="control-button" type="button">RESTART</button>
+      <section id="pvpPanel" class="menu-screen" aria-label="Player versus player" hidden>
+        <div class="menu-content pvp-content">
+          <h2 class="menu-title small-title">PVP MATCH</h2>
+          <button id="pvpBackButton" class="mode-button blue-mode" type="button">메뉴로</button>
+        </div>
+      </section>
+
+      <div id="gameView" class="game-view" hidden>
+        <div class="hud" aria-live="polite">
+          <div class="status-block">
+            <span id="turnBadge" class="turn-badge blue">BLUE</span>
+            <span id="statusText">READY</span>
+          </div>
+          <div class="score-row">
+            <span class="score red">RED <b id="redRemaining">10</b></span>
+            <span class="score blue">BLUE <b id="blueRemaining">10</b></span>
+          </div>
+          <button id="menuButton" class="control-button secondary" type="button">MENU</button>
+          <button id="startButton" class="control-button" type="button">START</button>
+          <button id="restartButton" class="control-button secondary" type="button" hidden>
+            RESTART
+          </button>
+        </div>
+
+        <section id="redQueue" class="queue-zone queue-red" aria-label="Red queue"></section>
+        <section id="blueQueue" class="queue-zone queue-blue" aria-label="Blue queue"></section>
+
+        <div class="divider divider-top"></div>
+        <div class="divider divider-bottom"></div>
+
+        <section id="board" class="board" aria-label="Urinal board">
+          <div class="lane lane-top" data-row="0"></div>
+          <div class="lane lane-bottom" data-row="1"></div>
+        </section>
+
+        <div id="gameOverPanel" class="game-over" hidden>
+          <div id="gameOverTitle" class="game-over-title">CHECKMATE</div>
+          <button id="gameOverRestart" class="control-button" type="button">RESTART</button>
+        </div>
       </div>
     </main>
 
